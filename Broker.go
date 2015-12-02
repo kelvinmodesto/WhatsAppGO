@@ -1,6 +1,12 @@
 package main
 
+import (
+    
+    
+    )
+
 type Node struct {
+	id int
 	mensagem MSG
 }
 
@@ -8,11 +14,12 @@ type MSG struct {
 }
 
 type Queue struct {
-	node  []*MSG
+	node  []*Node
 	size  int
-	head  int
-	tail  int
+	head, tail int
 	count int
+	idUser int
+	userName string
 }
 
 type QList struct {
@@ -21,27 +28,12 @@ type QList struct {
 	count int
 }
 
-type Receptor struct {
+func Push() {
+    
 }
 
-func add() {
-
-}
-
-func remove() {
-
-}
-
-func send() {
-
-}
-
-func receive() {
-
-}
-
-func listen() {
-
+func Pop(){
+    
 }
 
 func main() {

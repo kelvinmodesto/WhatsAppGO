@@ -1,0 +1,53 @@
+Comandos de envio de mensagem
+
+@: Responsavel pelos comandos de bate-papo
+
+1)@ID: define qual o destinatario da mensagem, e só é alterado
+quando se utiliza esse comando novamente com outro ID.
+    Exemplo:
+        Eu>>@Kelvin Olá Kelvin.
+        Eu>>Tudo bem com vc?
+        @Kelvin>>Olá cara
+        @Kelvin>>Tô bem e vc?
+        Eu>>@Thiago Olá Thiago.
+        Eu>>Tudo bem com vc?
+        @Thiago>>E ai
+        @Thiago>>To bem e vc?
+        
+    OBS: Verificar a viablidade de se enviar para mais de um usuario 
+    ao mesmo tempo.
+    
+    OBS: Quando enviar msg sem destinatario, o usuario manda msg pra ele mesmo,
+    sem necessidade de consulta ao servidor.
+    
+2)@all: consulta no servidor a lista de ID's de usuários
+para conversa.
+    Exemplo:
+        Eu>>@all
+        WhatsApp>> @Kelvin,@Leo,@Italo,@Thiago
+        Eu>>@Leo E ai
+        
+3)@close: Efetua comando para se desconectar e destruir as rotinas 
+em aberto.
+    Exemplo:
+        Eu>>@close
+        WhatsApp>>Você foi desconectado!
+
+4)@help: consulta as funções disponíveis e um breve tutorial
+
+5)@inbox: consulta no servidor todos as mensagens pendentes na fila
+enquanto o usuário estava indisponível.
+    Exemplo:
+        Eu>>@inbox
+        @Fulano>>E ai cara.
+        @Fulano>>Ei, vamos sair no domingo?
+        @Ciclano>>Tá aí?
+        @Beltrano>>Ei, qual seu telefone?
+
+6)@open: Efetua comando para se conectar e criar as rotinas 
+de conexão.
+    Exemplo:
+        Eu>>@open @Kelvin
+        WhatsApp>>Você foi conectado!
+        
+        OBS: Verificar viabilidade de login e um pouco mais de segurança!
