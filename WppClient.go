@@ -12,7 +12,20 @@ var msgAtual string
 
 //Estruturas para tratamento de mensagens
 func identificarComando(txt []string) {
-
+	switch cmd := strings.Replace(txt[0], "@", "", 1); cmd {
+	case "close":
+		close()
+	case "open":
+		open()
+	case "all":
+		all()
+	case "help":
+		help()
+	case "inbox":
+		inbox()
+	default:
+		id(txt)
+	}
 }
 
 //
@@ -36,12 +49,23 @@ func lerTexto(msg string) {
 		}
 	}
 }
+func id(txt []string) {
+
+}
 
 func open() {
 
 }
 
 func close() {
+
+}
+
+func help() {
+
+}
+
+func inbox() {
 
 }
 
@@ -68,6 +92,6 @@ func getListaContatos() {
 //Estruturas para envio de mensagens via TCP
 
 func main() {
-	lerTexto("fdfds @Kelvin Oi, tudo bem Kelvin?")
+	lerTexto("fdfds @Kelvin")
 
 }
