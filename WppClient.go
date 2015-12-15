@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"net"
+	"os"
 	"strings"
 )
 
@@ -29,26 +32,7 @@ func identificarComando(txt []string) {
 }
 
 //
-func lerTexto(msg string) {
 
-	var txt []string
-	if possuiComando := strings.Contains(msg, "@"); possuiComando == true {
-		if indexComando := strings.Index(msg, "@"); indexComando == 0 {
-			txt = strings.SplitN(msg, " ", 2)
-			identificarComando(txt)
-		} else {
-			txt = strings.SplitN(msg, "", indexComando+1)
-			txt = strings.SplitN(txt[indexComando], " ", 2)
-			identificarComando(txt)
-		}
-	} else {
-		if destino != "" {
-
-		} else {
-			fmt.Println("Eu:" + msg)
-		}
-	}
-}
 func id(txt []string) {
 
 }
@@ -61,10 +45,6 @@ func close() {
 
 }
 
-func help() {
-
-}
-
 func inbox() {
 
 }
@@ -74,7 +54,16 @@ func all() {
 }
 
 func send() {
-
+	conn, _ := net.Dial("tcp", "kelvinmodesto.koding.io:9933")
+	fmt.Println("OK!")
+	header := "Eu: "
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Print("Digite: ")
+		msg, _ := reader.ReadString('\n')
+		buff := []byte(header + msg)
+		conn.Write(buff)
+	}
 }
 
 func lerDestino() {

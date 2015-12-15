@@ -4,14 +4,7 @@ import (
 	"fmt"
 )
 
-//Estruturas do Broker
-
-type User struct {
-	id       int
-	username string
-	inbox    *Queue
-	online   bool
-}
+//----------------Zona de Estruturas-------------
 
 type Node struct {
 	id       int
@@ -33,13 +26,20 @@ type Queue struct {
 	userName string
 }
 
+type User struct {
+	id       int
+	username string
+	inbox    *Queue
+	online   bool
+}
+
 type QList struct {
 	userList []*User
 	size     int
 	count    int
 }
 
-//Zona de funções
+//--------------Zona de funções-----------------
 
 //Funções do Broker
 
@@ -65,8 +65,8 @@ func (q *Queue) PushQueue(n *Node) {
 		q.nodes = nodes
 	}
 	q.nodes[q.tail] = n
+	q.tail = (q.tail + 1) % len(q.nodes)
 	q.count++
-	q.tail = q.count - 1
 }
 
 func (q *Queue) PopQueue() *Node {
@@ -74,6 +74,7 @@ func (q *Queue) PopQueue() *Node {
 		return nil
 	}
 	node := q.nodes[q.head]
+	q.head = (q.head + 1) % len(q.nodes)
 	q.count--
 	return node
 }
@@ -88,7 +89,7 @@ func createList(size int) *QList {
 }
 
 func (ql *QList) addNewUser(user *User) {
-	tam := len(ql.userList)
+	//tam := len(ql.userList)
 
 }
 
@@ -101,12 +102,55 @@ func logoff() {
 
 }
 
+func lerTexto(msg string) {
+
+	var txt []string
+	if possuiComando := strings.Contains(msg, "@"); possuiComando == true {
+		if indexComando := strings.Index(msg, "@"); indexComando == 0 {
+			txt = strings.SplitN(msg, " ", 2)
+			identificarComando(txt)
+		} else {
+			txt = strings.SplitN(msg, "", indexComando+1)
+			txt = strings.SplitN(txt[indexComando], " ", 2)
+			identificarComando(txt)
+		}
+	} else {
+		if destino != "" {
+
+		} else {
+			fmt.Println("Eu:" + msg)
+		}
+	}
+}
+
+func receive() {
+	fmt.Println("Starting...")
+	ln, _ := net.Listen("tcp", ":9933")
+	fmt.Println("Listening...")
+	for {
+		conn, _ := ln.Accept()
+		fmt.Println("New Connection!")
+		go connection(conn)
+	}
+
+}
+func connection(conn net.Conn) {
+	reader := bufio.NewReader(conn)
+	for {
+		msg, _ := reader.ReadString('\n')
+		fmt.Println(msg)
+	}
+}
+
 func main() {
 	q := createQueue(1, "tiago")
 	q.PushQueue(&Node{1, &MSG{"kelvin", "Oi"}})
 	q.PushQueue(&Node{2, &MSG{"kelvin", "Tudo Bem?"}})
 	q.PushQueue(&Node{3, &MSG{"kelvin", "Quanto tempo cara"}})
-	us := &User{1, "tiago", q, false}
+	fmt.Println(q.PopQueue().mensagem.text)
+	fmt.Println(q.PopQueue().mensagem.text)
+	fmt.Println(q.PopQueue().mensagem.text)
+	// us := &User{1, "tiago", q, false}
 
-	fmt.Println(addUser(us))
+	// fmt.Println(addUser(us))
 }
