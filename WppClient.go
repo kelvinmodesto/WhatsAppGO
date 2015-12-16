@@ -5,31 +5,27 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"strings"
 )
 
 //Região de variáveis globais
-var destino string
-var comando string
-var msgAtual string
 
 //Estruturas para tratamento de mensagens
-func identificarComando(txt []string) {
-	switch cmd := strings.Replace(txt[0], "@", "", 1); cmd {
-	case "close":
-		close()
-	case "open":
-		open()
-	case "all":
-		all()
-	case "help":
-		help()
-	case "inbox":
-		inbox()
-	default:
-		id(txt)
-	}
-}
+// func identificarComando(txt []string) {
+// 	switch cmd := strings.Replace(txt[0], "@", "", 1); cmd {
+// 	case "close":
+// 		close()
+// 	case "open":
+// 		open()
+// 	case "all":
+// 		all()
+// 	case "help":
+// 		help()
+// 	case "inbox":
+// 		inbox()
+// 	default:
+// 		id(txt)
+// 	}
+// }
 
 //
 
@@ -81,6 +77,5 @@ func getListaContatos() {
 //Estruturas para envio de mensagens via TCP
 
 func main() {
-	lerTexto("fdfds @Kelvin")
-
+	send()
 }

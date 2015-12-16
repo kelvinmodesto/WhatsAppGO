@@ -1,8 +1,16 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"net"
+	"strings"
 )
+
+var destino string
+var comando string
+var msgAtual string
+var userMap map[string]User
 
 //----------------Zona de Estruturas-------------
 
@@ -31,12 +39,6 @@ type User struct {
 	username string
 	inbox    *Queue
 	online   bool
-}
-
-type QList struct {
-	userList []*User
-	size     int
-	count    int
 }
 
 //--------------Zona de funções-----------------
@@ -79,19 +81,16 @@ func (q *Queue) PopQueue() *Node {
 	return node
 }
 
-//Operações na lista de contatos
-func createList(size int) *QList {
-	return &QList{
-		userList: make([]*User, size),
-		size:     size,
-		count:    0,
-	}
-}
+// func addNewUser(user *User) {
+// 	userMap := make(map[user.username]user)
+// 	if usuario, ok := userMap[user.username]; ok{
+// 		user.inbox.PushQueue(n)
 
-func (ql *QList) addNewUser(user *User) {
-	//tam := len(ql.userList)
+// 		}
+// 		else{
 
-}
+// 		}
+// }
 
 //Operações com Usuários
 func logon() {
@@ -102,25 +101,18 @@ func logoff() {
 
 }
 
-func lerTexto(msg string) {
+func lerTexto(msg string) []string {
 
 	var txt []string
 	if possuiComando := strings.Contains(msg, "@"); possuiComando == true {
 		if indexComando := strings.Index(msg, "@"); indexComando == 0 {
 			txt = strings.SplitN(msg, " ", 2)
-			identificarComando(txt)
 		} else {
 			txt = strings.SplitN(msg, "", indexComando+1)
 			txt = strings.SplitN(txt[indexComando], " ", 2)
-			identificarComando(txt)
-		}
-	} else {
-		if destino != "" {
-
-		} else {
-			fmt.Println("Eu:" + msg)
 		}
 	}
+	return txt
 }
 
 func receive() {
@@ -138,19 +130,24 @@ func connection(conn net.Conn) {
 	reader := bufio.NewReader(conn)
 	for {
 		msg, _ := reader.ReadString('\n')
-		fmt.Println(msg)
+		//fmt.Println(msg)
+		var novaMSG []string
+		novaMSG = lerTexto(msg)
+		texto := &MSG{novaMSG[0], novaMSG[1]}
+		fmt.Println(texto)
+		verificarUsuario(novaMSG[0])
+	}
+}
+
+func verificarUsuario(username string) User {
+	if usuario, ok := userMap[username]; ok {
+		fmt.Println(usuario)
+		//return usuario
 	}
 }
 
 func main() {
-	q := createQueue(1, "tiago")
-	q.PushQueue(&Node{1, &MSG{"kelvin", "Oi"}})
-	q.PushQueue(&Node{2, &MSG{"kelvin", "Tudo Bem?"}})
-	q.PushQueue(&Node{3, &MSG{"kelvin", "Quanto tempo cara"}})
-	fmt.Println(q.PopQueue().mensagem.text)
-	fmt.Println(q.PopQueue().mensagem.text)
-	fmt.Println(q.PopQueue().mensagem.text)
-	// us := &User{1, "tiago", q, false}
+	//str := lerTexto("@Thiago e ai")
 
-	// fmt.Println(addUser(us))
+	//fmt.Println(str[1])
 }
