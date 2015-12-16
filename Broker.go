@@ -11,6 +11,8 @@ var destino string
 var comando string
 var msgAtual string
 var userMap map[string]User
+var contadorNode int
+var contadorUser int
 
 //----------------Zona de Estruturas-------------
 
@@ -134,20 +136,34 @@ func connection(conn net.Conn) {
 		var novaMSG []string
 		novaMSG = lerTexto(msg)
 		texto := &MSG{novaMSG[0], novaMSG[1]}
-		fmt.Println(texto)
-		verificarUsuario(novaMSG[0])
+		node := &Node{contadorNode, texto}
+		contadorNode++
+		adicionarMSG(novaMSG[0], node)
 	}
 }
 
-func verificarUsuario(username string) User {
+func adicionarMSG(username string, texto *Node) {
 	if usuario, ok := userMap[username]; ok {
-		fmt.Println(usuario)
-		//return usuario
+		usuario.inbox.PushQueue(texto)
+	} else {
+		newUser := User{contadorUser, username, createQueue(1, username), true}
+		userMap[username] = newUser
+		userMap[username].inbox.PushQueue(texto)
 	}
+}
+
+func inicializarUserMap() {
+	userMap = make(map[string]User)
 }
 
 func main() {
-	//str := lerTexto("@Thiago e ai")
-
-	//fmt.Println(str[1])
+	inicializarUserMap()
+	var novaMSG []string
+	novaMSG = lerTexto("@kelvin testando codigo")
+	texto := &MSG{novaMSG[0], novaMSG[1]}
+	node := &Node{contadorNode, texto}
+	contadorNode++
+	adicionarMSG(novaMSG[0], node)
+	//fmt.Println(userMap["@kelvin"])
+	fmt.Println(userMap["@kelvin"].inbox.nodes[0].mensagem.text)
 }
