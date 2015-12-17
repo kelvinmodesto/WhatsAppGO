@@ -83,24 +83,12 @@ func (q *Queue) PopQueue() *Node {
 	return node
 }
 
-// func addNewUser(user *User) {
-// 	userMap := make(map[user.username]user)
-// 	if usuario, ok := userMap[user.username]; ok{
-// 		user.inbox.PushQueue(n)
-
-// 		}
-// 		else{
-
-// 		}
-// }
-
-//Operações com Usuários
-func logon() {
-
-}
-
-func logoff() {
-
+func mudarStatus(user *User) {
+	if user.online {
+		user.online = false
+	} else {
+		user.online = true
+	}
 }
 
 func lerTexto(msg string) []string {
