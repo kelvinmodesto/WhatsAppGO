@@ -22,8 +22,9 @@ type Node struct {
 }
 
 type MSG struct {
-	sender string
-	text   string
+	sender   string
+	receiver string
+	text     string
 }
 
 type Queue struct {
@@ -41,6 +42,7 @@ type User struct {
 	username string
 	inbox    *Queue
 	online   bool
+	address  string
 }
 
 //--------------Zona de funções-----------------
@@ -91,6 +93,10 @@ func mudarStatus(user *User) {
 	}
 }
 
+func lerSender(msg string) []string {
+	return strings.Split(msg, ":")
+}
+
 func lerTexto(msg string) []string {
 
 	var txt []string
@@ -100,44 +106,82 @@ func lerTexto(msg string) []string {
 		} else {
 			txt = strings.SplitN(msg, "", indexComando+1)
 			txt = strings.SplitN(txt[indexComando], " ", 2)
+
 		}
 	}
 	return txt
 }
 
-func receive() {
-	fmt.Println("Starting...")
-	ln, _ := net.Listen("tcp", ":9933")
-	fmt.Println("Listening...")
+func send(mensagem *MSG, address string) {
+	conn, _ := net.Dial("tcp", address)
 	for {
-		conn, _ := ln.Accept()
-		fmt.Println("New Connection!")
+		buffer := []byte(mensagem.sender + ": " + mensagem.text)
+		conn.Write(buffer)
+	}
+}
+
+func receive() {
+	ln, _ := net.Listen("tcp", ":9933")
+	conn, _ := ln.Accept()
+	for {
 		go connection(conn)
 	}
 
 }
+
 func connection(conn net.Conn) {
 	reader := bufio.NewReader(conn)
 	for {
 		msg, _ := reader.ReadString('\n')
-		//fmt.Println(msg)
+		msgCompleta := lerSender(msg)
 		var novaMSG []string
-		novaMSG = lerTexto(msg)
-		texto := &MSG{novaMSG[0], novaMSG[1]}
+		novaMSG = lerTexto(msgCompleta[1])
+		//switch novaMSG[0] {
+		//case "@open":
+		enderecoOrigem := conn.RemoteAddr().String()
+		userTemp := userMap[novaMSG[0]]
+		userTemp.address = enderecoOrigem
+		userMap[novaMSG[0]] = userTemp
+
+		//case "@close":
+		checkClose(novaMSG[0], conn)
+
+		//default:
+		texto := &MSG{novaMSG[0], msgCompleta[0], novaMSG[1]}
 		node := &Node{contadorNode, texto}
 		contadorNode++
 		adicionarMSG(novaMSG[0], node)
+		fmt.Println(novaMSG[1])
+
+		//}
 	}
 }
-
 func adicionarMSG(username string, texto *Node) {
 	if usuario, ok := userMap[username]; ok {
 		usuario.inbox.PushQueue(texto)
+		sendMSGToClient(usuario)
 	} else {
-		newUser := User{contadorUser, username, createQueue(1, username), true}
+		newUser := User{contadorUser, username, createQueue(1, username), true, "localhost"}
 		userMap[username] = newUser
 		userMap[username].inbox.PushQueue(texto)
+		sendMSGToClient(newUser)
 	}
+}
+
+func sendMSGToClient(user User) {
+	for i := 0; i < user.inbox.count; i++ {
+		send(&MSG{user.inbox.PopQueue().mensagem.sender, user.inbox.PopQueue().mensagem.receiver, user.inbox.PopQueue().mensagem.text}, user.address)
+	}
+}
+
+func checkClose(cmd string, con net.Conn) {
+	if cmd == "@close" {
+		con.Close()
+	}
+}
+
+func executeServer() {
+
 }
 
 func inicializarUserMap() {
@@ -146,12 +190,6 @@ func inicializarUserMap() {
 
 func main() {
 	inicializarUserMap()
-	var novaMSG []string
-	novaMSG = lerTexto("@kelvin testando codigo")
-	texto := &MSG{novaMSG[0], novaMSG[1]}
-	node := &Node{contadorNode, texto}
-	contadorNode++
-	adicionarMSG(novaMSG[0], node)
-	//fmt.Println(userMap["@kelvin"])
-	fmt.Println(userMap["@kelvin"].inbox.nodes[0].mensagem.text)
+	fmt.Println("Servidor Online")
+	receive()
 }
