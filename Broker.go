@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 )
 
 var destino string
@@ -112,76 +113,91 @@ func lerTexto(msg string) []string {
 	return txt
 }
 
-func send(mensagem *MSG, address string) {
-	conn, _ := net.Dial("tcp", address)
+func receive() {
+	ln, _ := net.Listen("tcp", ":9933")
+	var conn net.Conn
 	for {
-		buffer := []byte(mensagem.sender + ": " + mensagem.text)
+		conn, _ = ln.Accept()
+		go connection(conn, ln)
+		go sendControl()
+	}
+
+}
+
+func sendControl() {
+	msgToSend := getINBOX()
+	for {
+		defer time.Sleep(5000 * time.Millisecond)
+		for i := 0; i < len(msgToSend); i++ {
+			sendTo(msgToSend[i].mensagem, userMap[msgToSend[i].mensagem.receiver].address)
+		}
+	}
+}
+
+func sendTo(mensagem *MSG, address string) {
+	addressNovaPorta := strings.Split(address, ":")
+	conn, _ := net.Dial("tcp", addressNovaPorta[0]+":9933")
+	saida := mensagem.sender + ":" + mensagem.text
+	for {
+		buffer := []byte(saida)
 		conn.Write(buffer)
 	}
 }
 
-func receive() {
-	ln, _ := net.Listen("tcp", ":9933")
-	conn, _ := ln.Accept()
-	for {
-		go connection(conn)
-	}
-
-}
-
-func connection(conn net.Conn) {
+func connection(conn net.Conn, ln net.Listener) {
 	reader := bufio.NewReader(conn)
 	for {
 		msg, _ := reader.ReadString('\n')
 		msgCompleta := lerSender(msg)
 		var novaMSG []string
 		novaMSG = lerTexto(msgCompleta[1])
-		//switch novaMSG[0] {
-		//case "@open":
-		enderecoOrigem := conn.RemoteAddr().String()
-		userTemp := userMap[novaMSG[0]]
-		userTemp.address = enderecoOrigem
-		userMap[novaMSG[0]] = userTemp
+		fmt.Println(novaMSG[0])
+		destinatario := strings.Replace(novaMSG[0], "\n", "", 1)
+		if destinatario == "@close" {
+			fmt.Println("Desconectando...")
+			userTemp := userMap[destinatario]
+			userTemp.online = false
+			userMap[destinatario] = userTemp
+			conn.Close()
+		} else {
+			enderecoOrigem := conn.RemoteAddr().String()
+			userTemp := userMap[destinatario]
+			userTemp.address = enderecoOrigem
+			userTemp.online = true
+			userMap[destinatario] = userTemp
 
-		//case "@close":
-		checkClose(novaMSG[0], conn)
+			texto := &MSG{novaMSG[0], msgCompleta[0], novaMSG[1]}
+			node := &Node{contadorNode, texto}
+			contadorNode++
+			adicionarMSG(novaMSG[0], node)
+		}
 
-		//default:
-		texto := &MSG{novaMSG[0], msgCompleta[0], novaMSG[1]}
-		node := &Node{contadorNode, texto}
-		contadorNode++
-		adicionarMSG(novaMSG[0], node)
-		fmt.Println(novaMSG[1])
-
-		//}
 	}
 }
 func adicionarMSG(username string, texto *Node) {
 	if usuario, ok := userMap[username]; ok {
 		usuario.inbox.PushQueue(texto)
-		sendMSGToClient(usuario)
 	} else {
-		newUser := User{contadorUser, username, createQueue(1, username), true, "localhost"}
-		userMap[username] = newUser
-		userMap[username].inbox.PushQueue(texto)
-		sendMSGToClient(newUser)
+		fmt.Println("Usuário não está cadastrado")
 	}
 }
 
-func sendMSGToClient(user User) {
-	for i := 0; i < user.inbox.count; i++ {
-		send(&MSG{user.inbox.PopQueue().mensagem.sender, user.inbox.PopQueue().mensagem.receiver, user.inbox.PopQueue().mensagem.text}, user.address)
+func getINBOX() []*Node {
+	var vetor []*Node
+	j := 0
+	for username, _ := range userMap {
+		if i := userMap[username].inbox.count; i > 0 && userMap[username].online == true {
+			for i > 0 {
+				//esvaziar a fila
+
+				vetor[j] = userMap[username].inbox.PopQueue()
+				i -= 1
+				j += 1
+			}
+			return vetor
+		}
 	}
-}
-
-func checkClose(cmd string, con net.Conn) {
-	if cmd == "@close" {
-		con.Close()
-	}
-}
-
-func executeServer() {
-
+	return nil
 }
 
 func inicializarUserMap() {
@@ -190,6 +206,8 @@ func inicializarUserMap() {
 
 func main() {
 	inicializarUserMap()
-	fmt.Println("Servidor Online")
-	receive()
+	userMap["@kelvin"] = User{0, "@kelvin", createQueue(1, "@kelvin"), false, "nenhum"}
+	userMap["@thiago"] = User{1, "@thiago", createQueue(1, "@thiago"), false, "nenhum"}
+	//fmt.Println("Servidor Online")
+	//receive()
 }

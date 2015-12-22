@@ -5,46 +5,32 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 var buffer []byte
-var CONN net.Conn
-
-type Cliente struct {
-	name string
-	conn net.Conn
-	quit bool
-}
-
-func (cl *Cliente) inicializarConversa() {
-	cl.conn, _ = net.Dial("tcp", "kelvinmodesto.koding.io:9933")
-	fmt.Println("OK!")
-	buffer = []byte("@open")
-	cl.conn.Write(buffer)
-}
+var Conn net.Conn
 
 //Região de variáveis globais
 
-func (cl *Cliente) send() {
-	cl.conn, _ = net.Dial("tcp", "localhost:9933")
-	fmt.Println("OK!")
+func Send() {
+	conn, _ := net.Dial("tcp", "kelvinmodesto.koding.io:9933")
+	fmt.Println("Digite o seu nome de usuário!")
 	reader := bufio.NewReader(os.Stdin)
+	header, _ := reader.ReadString('\n')
+	reader = bufio.NewReader(os.Stdin)
 	for {
-		fmt.Print("Eu: ")
+		fmt.Print(strings.Replace(header, "\n", "", 1) + ":")
 		msg, _ := reader.ReadString('\n')
-		buffer = []byte(msg)
-		cl.conn.Write(buffer)
+		buffer = []byte(strings.Replace(header, "\n", "", 1) + ":" + msg)
+		conn.Write(buffer)
 	}
 }
 
-func (cl *Cliente) getINBOX() {
-
-}
-
-func (cl *Cliente) receiveMessage() {
+func receiveMessage() {
 	ln, _ := net.Listen("tcp", ":9933")
-	cl.conn, _ = ln.Accept()
-	reader := bufio.NewReader(cl.conn)
+	Conn, _ = ln.Accept()
+	reader := bufio.NewReader(Conn)
 	for {
 		msg, _ := reader.ReadString('\n')
 		fmt.Println(msg)
@@ -52,11 +38,17 @@ func (cl *Cliente) receiveMessage() {
 
 }
 
-func (cl *Cliente) fecharConexao() {
-	cl.quit = true
+func fecharConexao(conn net.Conn) {
+	conn.Close()
 }
 
 func main() {
-	clienteTeste := &Cliente{"@kelvin", CONN, false}
-	clienteTeste.send()
+
+	//clienteTeste := &Cliente{"@kelvin", Conn, false}
+	//clienteTeste.send()
+	for {
+		go Send()
+	}
+	// go receiveMessage()
+
 }
