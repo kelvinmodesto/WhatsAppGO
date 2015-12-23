@@ -43,12 +43,10 @@ func fecharConexao(conn net.Conn) {
 }
 
 func main() {
-
+	// executarCliente()
+	Send()
 	//clienteTeste := &Cliente{"@kelvin", Conn, false}
 	//clienteTeste.send()
-	for {
-		go Send()
-	}
 	// go receiveMessage()
 
 }

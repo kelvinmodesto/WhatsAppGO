@@ -119,7 +119,7 @@ func receive() {
 	for {
 		conn, _ = ln.Accept()
 		go connection(conn, ln)
-		go sendControl()
+		//go sendControl()
 	}
 
 }
@@ -208,6 +208,6 @@ func main() {
 	inicializarUserMap()
 	userMap["@kelvin"] = User{0, "@kelvin", createQueue(1, "@kelvin"), false, "nenhum"}
 	userMap["@thiago"] = User{1, "@thiago", createQueue(1, "@thiago"), false, "nenhum"}
-	//fmt.Println("Servidor Online")
-	//receive()
+	fmt.Println("Servidor Online")
+	receive()
 }
